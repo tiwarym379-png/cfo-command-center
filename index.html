@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>CFO Command Center</title>
+<style>
+  :root {
+    --bg-body: #05070b;
+    --bg-bar: #0c1017;
+    --bg-card: #10161f;
+    --bg-input: #070a0f;
+    --border-color: #1c2636;
+    --text-white: #f1f5f9;
+    --text-muted: #94a3b8;
+    --cyan: #00d4ff;
+    --blue-input: #4da6ff;
+    --green: #34d399;
+    --green-bright: #22c55e;
+    --red: #f87171;
+    --yellow: #fbbf24;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-body);
+    color: var(--text-white);
+    padding: 10px 12px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  /* 1. TOP MODULE TABS */
+  .tabs-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .tab-btn {
+    background: #121822;
+    color: #94a3b8;
+    border: 1px solid #1f2937;
+    border-radius: 7px;
+    padding: 12px 10px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .tab-btn:hover {
+    border-color: #334155;
+    color: #e2e8f0;
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(180deg, #2b7ec1 0%, #1d5a91 100%);
+    color: #ffffff;
+    border-color: #5ab0f5;
+    box-shadow: 0 2px 10px rgba(43, 126, 193, 0.35);
+  }
+
+  /* 2. TOP TYPEABLE INPUT BOXES BAR */
+  .inputs-bar {
+    background: var(--bg-bar);
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    padding: 8px 12px;
+    display: grid;
+    gap: 12px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+
+  .inputs-6 { grid-template-columns: repeat(6, 1fr); }
+  .inputs-5 { grid-template-columns: repeat(5, 1fr); }
+  .inputs-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .input-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .input-item label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    white-space: nowrap;
+  }
+
+  .input-item input {
+    width: 100%;
+    min-width: 65px;
+    background: var(--bg-input);
+    border: 1px solid #1c293d;
+    border-radius: 5px;
+    color: var(--blue-input);
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    text-align: right;
+    outline: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .input-item input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.18);
+  }
+
+  /* Remove default number arrows for clean look */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  /* 3. MODULE BANNER */
+  .module-banner {
+    background: linear-gradient(90deg, #0d3256 0%, #102136 55%, #111823 100%);
+    border: 1px solid #1e3a5f;
+    border-left: 4px solid var(--cyan);
+    border-radius: 5px;
+    padding: 9px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .module-banner .title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .module-banner .subtitle {
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    font-weight: 500;
+  }
+
+  /* 4. MAIN WORKSPACE GRID (TABLE LEFT + CARDS RIGHT) */
+  .workspace-grid {
+    display: grid;
+    grid-template-columns: 2.15fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  /* TABLE PANEL */
+  .table-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 560px;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, #163e64 0%, #113252 100%);
+    color: #f1f5f9;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 1px solid #1e456e;
+    white-space: nowrap;
+  }
+
+  thead th:first-child {
+    text-align: center;
+  }
+
+  tbody td {
+    padding: 9px 12px;
+    font-size: 0.8rem;
+    text-align: right;
+    border-bottom: 1px solid #17202e;
+    color: #cbd5e1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  tbody td:first-child {
+    text-align: center;
+    color: #5ab0f5;
+    font-weight: 700;
+  }
+
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  /* Special Rows & Text Colors */
+  .t-green { color: var(--green) !important; font-weight: 700; }
+  .t-red { color: var(--red) !important; font-weight: 700; }
+  .t-cyan { color: var(--cyan) !important; font-weight: 700; }
+  .t-white { color: #ffffff !important; font-weight: 700; }
+  .t-muted { color: #94a3b8 !important; }
+
+  .row-terminal {
+    background: rgba(14, 116, 144, 0.14) !important;
+    border-top: 2px solid var(--cyan);
+  }
+  .row-terminal td {
+    color: var(--cyan) !important;
+    font-weight: 700 !important;
+    padding: 11px 12px;
+  }
+  .row-terminal td:first-child {
+    color: #e2e8f0 !important;
+  }
+
+  .row-bep {
+    background: rgba(43, 126, 193, 0.16) !important;
+  }
+
+  /* RIGHT KPI CARDS */
+  .cards-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    padding: 14px 16px;
+  }
+
+  .card-cyan { border-top: 3px solid var(--cyan); }
+  .card-green { border-top: 3px solid var(--green-bright); }
+  .card-yellow { border-top: 3px solid var(--yellow); }
+
+  .card-heading {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .big-metric {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--cyan);
+    margin-bottom: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .metric-row:first-of-type {
+    border-top: none;
+  }
+
+  .metric-row strong {
+    color: var(--text-white);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .signal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1c2636;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .signal-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+
+  .badge {
+    font-size: 0.66rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-green {
+    background: rgba(34, 197, 94, 0.14);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+  }
+
+  .badge-yellow {
+    background: rgba(234, 179, 8, 0.14);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+
+  .badge-red {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+
+  /* Split Progress Bar */
+  .split-bar {
+    width: 100%;
+    height: 7px;
+    background: #1e293b;
+    border-radius: 99px;
+    overflow: hidden;
+    display: flex;
+    margin: 9px 0 5px 0;
+  }
+
+  .bar-green { background: var(--green-bright); height: 100%; }
+  .bar-cyan { background: var(--cyan); height: 100%; }
+  .bar-red { background: var(--red); height: 100%; }
+  .bar-gray { background: #64748b; height: 100%; }
+
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .bottom-highlight-box {
+    background: #0b111b;
+    border: 1px solid #1e3a5f;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .bottom-highlight-box .box-lbl {
+    font-size: 0.7rem;
+    color: #93c5fd;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+
+  .bottom-highlight-box .box-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .module-view { display: none; }
+  .module-view.active { display: block; }
+
+  /* =========================================================
+     RESPONSIVE DESIGN FOR TABLETS & MOBILE PHONES
+     ========================================================= */
+  @media (max-width: 1100px) {
+    .inputs-6 { grid-template-columns: repeat(3, 1fr); }
+    .inputs-5 { grid-template-columns: repeat(3, 1fr); }
+    .inputs-4 { grid-template-columns: repeat(2, 1fr); }
+    .workspace-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 8px; }
+    .tabs-row {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+    }
+    .tab-btn {
+      font-size: 0.78rem;
+      padding: 10px 6px;
+    }
+    .inputs-6, .inputs-5, .inputs-4 {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 8px 10px;
+    }
+    .input-item label {
+      font-size: 0.73rem;
+    }
+    .input-item input {
+      font-size: 15px; /* Prevents iOS/Android auto-zoom while staying compact */
+      padding: 5px 8px;
+    }
+    .module-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .big-metric {
+      font-size: 1.55rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- TOP NAVIGATION TABS -->
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="openModule(1)">📈 1. Stock DCF Engine</button>
+    <button class="tab-btn" onclick="openModule(2)">🏦 2. Loan & EMI Engine</button>
+    <button class="tab-btn" onclick="openModule(3)">🏭 3. NPV & IRR Engine</button>
+    <button class="tab-btn" onclick="openModule(4)">📊 4. Break-Even (CVP)</button>
+  </div>
+
+  <!-- =========================================================
+       MODULE 1: STOCK DCF ENGINE
+       ========================================================= -->
+  <div id="mod1" class="module-view active">
+    <div class="inputs-bar inputs-6">
+      <div class="input-item">
+        <label>FCF (Cr):</label>
+        <input type="number" id="m1_fcf" value="48500" step="any" oninput="runDCF()">
+      </div>
+      <div class="input-item">
+        <label>Shares (Cr):</label>
+        <input type="number" id="m1_shares" value="361.8" step="any" oninput="runDCF()">
+      </div>
+      <div class="input-item">
+        <label>Growth %:</label>
+        <input type="number" id="m1_growth" value="10" step="any" oninput="runDCF()">
+      </div>
+      <div class="input-item">
+        <label>WACC %:</label>
+        <input type="number" id="m1_wacc" value="11" step="any" oninput="runDCF()">
+      </div>
+      <div class="input-item">
+        <label>NSE Price ₹:</label>
+        <input type="number" id="m1_price" value="2305" step="any" oninput="runDCF()">
+      </div>
+      <div class="input-item">
+        <label>Safety %:</label>
+        <input type="number" id="m1_safety" value="15" step="any" oninput="runDCF()">
+      </div>
+    </div>
+
+    <div class="module-banner">
+      <div class="title">MODULE 1: INTRINSIC STOCK VALUATION (DCF) & SIGNAL ENGINE</div>
+      <div class="subtitle" id="m1_sub">Shares Out: 361.8 Cr | Implied Market Cap: ₹ 8,33,949 Cr</div>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="table-panel">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Projected FCF</th>
+                <th>Growth</th>
+                <th>PV Factor</th>
+                <th>Present Value</th>
+                <th>Cumulative PV</th>
+              </tr>
+            </thead>
+            <tbody id="m1_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cards-col">
+        <div class="kpi-card card-cyan">
+          <div class="card-heading">FAIR INTRINSIC VALUE / SHARE</div>
+          <div class="big-metric" id="m1_fair">₹ 3,245</div>
+          <div class="metric-row">
+            <span>Current Market Price:</span>
+            <strong id="m1_cmp">₹ 2,305</strong>
+          </div>
+          <div class="metric-row">
+            <span>Implied Upside / Downside:</span>
+            <strong id="m1_upside" class="t-green">+40.8%</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-green">
+          <div class="signal-top">
+            <span class="signal-title">SAFETY & SIGNAL</span>
+            <span id="m1_badge" class="badge badge-green">UNDERVALUED — STRONG BUY</span>
+          </div>
+          <div class="metric-row">
+            <span>Margin of Safety Applied:</span>
+            <strong id="m1_mos">15%</strong>
+          </div>
+          <div class="metric-row">
+            <span>Safe Target Buy Price:</span>
+            <strong id="m1_safe_buy" class="t-green" style="font-size:1.15rem;">₹ 2,758</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-yellow">
+          <div class="metric-row">
+            <span>PV of 10-Yr Cash Flows:</span>
+            <strong id="m1_pv10" class="t-green">₹ 4,61,606 Cr</strong>
+          </div>
+          <div class="metric-row">
+            <span>PV of Terminal Value:</span>
+            <strong id="m1_pvterm" class="t-cyan">₹ 7,12,265 Cr</strong>
+          </div>
+          <div class="split-bar">
+            <div id="m1_bar1" class="bar-green" style="width:39%;"></div>
+            <div id="m1_bar2" class="bar-cyan" style="width:61%;"></div>
+          </div>
+          <div class="bar-labels">
+            <span id="m1_lbl1">10-Yr FCF (39%)</span>
+            <span id="m1_lbl2">Terminal (61%)</span>
+          </div>
+          <div class="bottom-highlight-box">
+            <div class="box-lbl">Total Intrinsic Enterprise Value</div>
+            <div class="box-val" id="m1_ev">₹ 11,73,872 Cr</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODULE 2: LOAN & EMI ENGINE
+       ========================================================= -->
+  <div id="mod2" class="module-view">
+    <div class="inputs-bar inputs-4">
+      <div class="input-item">
+        <label>Loan Amt ₹:</label>
+        <input type="number" id="m2_loan" value="2500000" step="any" oninput="runEMI()">
+      </div>
+      <div class="input-item">
+        <label>Interest %:</label>
+        <input type="number" id="m2_rate" value="8.7" step="any" oninput="runEMI()">
+      </div>
+      <div class="input-item">
+        <label>Tenure (Yrs):</label>
+        <input type="number" id="m2_yrs" value="5" step="any" oninput="runEMI()">
+      </div>
+      <div class="input-item">
+        <label>Max Budget ₹:</label>
+        <input type="number" id="m2_budget" value="51533" step="any" oninput="runEMI()">
+      </div>
+    </div>
+
+    <div class="module-banner">
+      <div class="title">MODULE 2: LOAN AMORTIZATION & BUDGET ENGINE</div>
+      <div class="subtitle" id="m2_sub">Tenure: 60 Months (5 Years) | Effective Rate: 8.70% p.a.</div>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="table-panel">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Opening Balance</th>
+                <th>EMI Payment</th>
+                <th>Interest Paid</th>
+                <th>Principal Paid</th>
+                <th>Closing Balance</th>
+              </tr>
+            </thead>
+            <tbody id="m2_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cards-col">
+        <div class="kpi-card card-cyan">
+          <div class="card-heading">CALCULATED MONTHLY EMI</div>
+          <div class="big-metric" id="m2_emi">₹ 51,533</div>
+          <div class="metric-row">
+            <span>Loan Principal Amount:</span>
+            <strong id="m2_prin">₹ 25,00,000</strong>
+          </div>
+          <div class="metric-row">
+            <span>Annual Interest Rate:</span>
+            <strong id="m2_rate_lbl">8.70%</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-green">
+          <div class="signal-top">
+            <span class="signal-title">BUDGET FUNCTION</span>
+            <span id="m2_badge" class="badge badge-green">WITHIN BUDGET</span>
+          </div>
+          <div class="metric-row">
+            <span>My Max Monthly Budget:</span>
+            <strong id="m2_bgt_lbl">₹ 51,533</strong>
+          </div>
+          <div class="metric-row">
+            <span>Max Loan Allowed:</span>
+            <strong id="m2_max_loan" class="t-green" style="font-size:1.15rem;">₹ 25,00,017</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-yellow">
+          <div class="metric-row">
+            <span>Total EMI Outflow:</span>
+            <strong id="m2_tot_out">₹ 30,91,959</strong>
+          </div>
+          <div class="metric-row">
+            <span>Total Interest Payable:</span>
+            <strong id="m2_tot_int" class="t-red">₹ 5,91,959</strong>
+          </div>
+          <div class="split-bar">
+            <div id="m2_bar1" class="bar-green" style="width:81%;"></div>
+            <div id="m2_bar2" class="bar-red" style="width:19%;"></div>
+          </div>
+          <div class="bar-labels">
+            <span id="m2_lbl1">Principal (81%)</span>
+            <span id="m2_lbl2">Interest (19%)</span>
+          </div>
+          <div class="bottom-highlight-box">
+            <div class="box-lbl">Extra % Payable on Principal</div>
+            <div class="box-val" id="m2_extra_pct">24%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODULE 3: NPV & IRR ENGINE
+       ========================================================= -->
+  <div id="mod3" class="module-view">
+    <div class="inputs-bar inputs-5">
+      <div class="input-item">
+        <label>Capex (Cr):</label>
+        <input type="number" id="m3_capex" value="500" step="any" oninput="runNPV()">
+      </div>
+      <div class="input-item">
+        <label>Yr 1 Cash (Cr):</label>
+        <input type="number" id="m3_cf1" value="130" step="any" oninput="runNPV()">
+      </div>
+      <div class="input-item">
+        <label>CF Growth %:</label>
+        <input type="number" id="m3_growth" value="10" step="any" oninput="runNPV()">
+      </div>
+      <div class="input-item">
+        <label>WACC %:</label>
+        <input type="number" id="m3_wacc" value="12" step="any" oninput="runNPV()">
+      </div>
+      <div class="input-item">
+        <label>Life (Yrs):</label>
+        <input type="number" id="m3_life" value="7" step="1" oninput="runNPV()">
+      </div>
+    </div>
+
+    <div class="module-banner">
+      <div class="title">MODULE 3: CAPITAL BUDGETING (NPV, IRR & PAYBACK ENGINE)</div>
+      <div class="subtitle" id="m3_sub">Project Horizon: 7 Years | Hurdle Rate (WACC): 12.0%</div>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="table-panel">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Net Cash Flow</th>
+                <th>PV Factor</th>
+                <th>Discounted CF</th>
+                <th>Cum. Raw Cash</th>
+                <th>Cum. Net PV (NPV)</th>
+              </tr>
+            </thead>
+            <tbody id="m3_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cards-col">
+        <div class="kpi-card card-cyan">
+          <div class="card-heading">NET PRESENT VALUE (NPV)</div>
+          <div class="big-metric t-green" id="m3_npv">+₹ 270.2 Cr</div>
+          <div class="metric-row">
+            <span>Total PV of Cash Inflows:</span>
+            <strong id="m3_pvin" class="t-green">₹ 770.2 Cr</strong>
+          </div>
+          <div class="metric-row">
+            <span>Initial Capex Outflow:</span>
+            <strong id="m3_capex_lbl" class="t-red">₹ 500.0 Cr</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-green">
+          <div class="signal-top">
+            <span class="signal-title">IRR & DECISION SIGNAL</span>
+            <span id="m3_badge" class="badge badge-green">VIABLE — ACCEPT PROJECT</span>
+          </div>
+          <div class="metric-row">
+            <span>Internal Rate of Return (IRR):</span>
+            <strong id="m3_irr" class="t-green" style="font-size:1.15rem;">25.89%</strong>
+          </div>
+          <div class="metric-row">
+            <span id="m3_spread_title">Net Spread vs WACC (12.0%):</span>
+            <strong id="m3_spread" class="t-green">+13.89%</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-yellow">
+          <div class="metric-row">
+            <span>Exact Payback Period:</span>
+            <strong id="m3_payback" class="t-cyan">3.40 Years</strong>
+          </div>
+          <div class="metric-row">
+            <span>Profitability Index (PI):</span>
+            <strong id="m3_pi" class="t-green">1.54x</strong>
+          </div>
+          <div class="split-bar">
+            <div id="m3_bar1" class="bar-gray" style="width:65%;"></div>
+            <div id="m3_bar2" class="bar-green" style="width:35%;"></div>
+          </div>
+          <div class="bar-labels">
+            <span id="m3_lbl1">Capex Recovery (65%)</span>
+            <span id="m3_lbl2">Net Value Added (35%)</span>
+          </div>
+          <div class="bottom-highlight-box">
+            <div class="box-lbl">Total Undiscounted Net Cash</div>
+            <div class="box-val" id="m3_raw_net">₹ 733.3 Cr</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODULE 4: BREAK-EVEN (CVP) ENGINE
+       ========================================================= -->
+  <div id="mod4" class="module-view">
+    <div class="inputs-bar inputs-5">
+      <div class="input-item">
+        <label>Price/Unit ₹:</label>
+        <input type="number" id="m4_price" value="1500" step="any" oninput="runCVP()">
+      </div>
+      <div class="input-item">
+        <label>Var Cost ₹:</label>
+        <input type="number" id="m4_vc" value="900" step="any" oninput="runCVP()">
+      </div>
+      <div class="input-item">
+        <label>Fixed (Lakh):</label>
+        <input type="number" id="m4_fixed" value="120" step="any" oninput="runCVP()">
+      </div>
+      <div class="input-item">
+        <label>Target (Lakh):</label>
+        <input type="number" id="m4_target" value="60" step="any" oninput="runCVP()">
+      </div>
+      <div class="input-item">
+        <label>Curr Units:</label>
+        <input type="number" id="m4_curr" value="25000" step="any" oninput="runCVP()">
+      </div>
+    </div>
+
+    <div class="module-banner">
+      <div class="title">MODULE 4: COST-VOLUME-PROFIT (CVP) & BREAK-EVEN ENGINE</div>
+      <div class="subtitle" id="m4_sub">Contribution Margin: ₹ 600/Unit (40.0%) | Current Volume: 25,000 Units</div>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="table-panel">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Volume Tier</th>
+                <th>Gross Revenue</th>
+                <th>Variable Cost</th>
+                <th>Fixed Cost</th>
+                <th>Net Profit (EBIT)</th>
+                <th>Operating Margin</th>
+              </tr>
+            </thead>
+            <tbody id="m4_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cards-col">
+        <div class="kpi-card card-cyan">
+          <div class="card-heading">BREAK-EVEN VOLUME (BEP)</div>
+          <div class="big-metric" id="m4_bep_u">20,000 Units</div>
+          <div class="metric-row">
+            <span>Break-Even Revenue:</span>
+            <strong id="m4_bep_rev">₹ 300.00 Lakh</strong>
+          </div>
+          <div class="metric-row">
+            <span>Contribution / Unit (CM%):</span>
+            <strong id="m4_cm_lbl" class="t-green">₹ 600 (40.0%)</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-green">
+          <div class="signal-top">
+            <span class="signal-title">OPERATING STATUS</span>
+            <span id="m4_badge" class="badge badge-green">PROFITABLE — SAFE ZONE</span>
+          </div>
+          <div class="metric-row">
+            <span id="m4_np_title">Net Profit at 25,000 Units:</span>
+            <strong id="m4_np_val" class="t-green" style="font-size:1.15rem;">₹ 30.00 Lakh</strong>
+          </div>
+          <div class="metric-row">
+            <span>Margin of Safety Buffer:</span>
+            <strong id="m4_mos" class="t-green">20.0%</strong>
+          </div>
+        </div>
+
+        <div class="kpi-card card-yellow">
+          <div class="metric-row">
+            <span>Target Profit Goal:</span>
+            <strong id="m4_t_goal">₹ 60.0 Lakh</strong>
+          </div>
+          <div class="metric-row">
+            <span>Required Target Sales:</span>
+            <strong id="m4_t_sales" class="t-cyan">₹ 450.00 Lakh</strong>
+          </div>
+          <div class="split-bar">
+            <div id="m4_bar1" class="bar-red" style="width:60%;"></div>
+            <div id="m4_bar2" class="bar-green" style="width:40%;"></div>
+          </div>
+          <div class="bar-labels">
+            <span id="m4_lbl1">Variable Cost (60%)</span>
+            <span id="m4_lbl2">Contribution (40%)</span>
+          </div>
+          <div class="bottom-highlight-box">
+            <div class="box-lbl">Units Required for Target Profit</div>
+            <div class="box-val" id="m4_t_units">30,000 Units</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fmtIN = (val, dec = 0) => {
+    if (isNaN(val) || !isFinite(val)) return "0";
+    return Number(val).toLocaleString('en-IN', {
+      minimumFractionDigits: dec,
+      maximumFractionDigits: dec
+    });
+  };
+
+  function openModule(num) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === num - 1);
+    });
+    document.querySelectorAll('.module-view').forEach((v, i) => {
+      v.classList.toggle('active', i === num - 1);
+    });
+  }
+
+  /* =========================================================
+     1. STOCK DCF ENGINE
+     ========================================================= */
+  function runDCF() {
+    const fcf0 = parseFloat(document.getElementById('m1_fcf').value) || 0;
+    const shares = parseFloat(document.getElementById('m1_shares').value) || 1;
+    const g = (parseFloat(document.getElementById('m1_growth').value) || 0) / 100;
+    const wacc = (parseFloat(document.getElementById('m1_wacc').value) || 1) / 100;
+    const cmp = parseFloat(document.getElementById('m1_price').value) || 0;
+    const safety = (parseFloat(document.getElementById('m1_safety').value) || 0) / 100;
+    const termG = 0.045;
+
+    const mcap = shares * cmp;
+    document.getElementById('m1_sub').innerText =
+      `Shares Out: ${fmtIN(shares, 1)} Cr | Implied Market Cap: ₹ ${fmtIN(mcap, 0)} Cr`;
+
+    let rows = "";
+    let fcf = fcf0;
+    let cumPV = 0;
+
+    for (let yr = 1; yr <= 10; yr++) {
+      fcf = fcf * (1 + g);
+      const pvf = 1 / Math.pow(1 + wacc, yr);
+      const pv = fcf * pvf;
+      cumPV += pv;
+
+      rows += `<tr>
+        <td>Year ${yr}</td>
+        <td>₹ ${fmtIN(fcf, 1)} Cr</td>
+        <td class="t-muted">${(g * 100).toFixed(1)}%</td>
+        <td class="t-muted">${pvf.toFixed(3)}x</td>
+        <td class="t-green">₹ ${fmtIN(pv, 1)} Cr</td>
+        <td class="t-white">₹ ${fmtIN(cumPV, 1)} Cr</td>
+      </tr>`;
+    }
+
+    const pv10 = cumPV;
+    const spread = Math.max(0.005, wacc - termG);
+    const termVal = (fcf * (1 + termG)) / spread;
+    const termPVF = 1 / Math.pow(1 + wacc, 10);
+    const pvTerm = termVal * termPVF;
+    const totalEV = pv10 + pvTerm;
+
+    rows += `<tr class="row-terminal">
+      <td>Terminal (Y10)</td>
+      <td>₹ ${fmtIN(termVal, 0)} Cr</td>
+      <td>${(termG * 100).toFixed(1)}%</td>
+      <td>${termPVF.toFixed(3)}x</td>
+      <td>₹ ${fmtIN(pvTerm, 0)} Cr</td>
+      <td>₹ ${fmtIN(totalEV, 0)} Cr</td>
+    </tr>`;
+
+    document.getElementById('m1_tbody').innerHTML = rows;
+
+    const fairVal = totalEV / shares;
+    const safeBuy = fairVal * (1 - safety);
+    const upside = cmp > 0 ? ((fairVal - cmp) / cmp) * 100 : 0;
+
+    document.getElementById('m1_fair').innerText = `₹ ${fmtIN(fairVal, 0)}`;
+    document.getElementById('m1_cmp').innerText = `₹ ${fmtIN(cmp, 0)}`;
+
+    const upEl = document.getElementById('m1_upside');
+    upEl.innerText = `${upside >= 0 ? '+' : ''}${upside.toFixed(1)}%`;
+    upEl.className = upside >= 0 ? 't-green' : 't-red';
+
+    document.getElementById('m1_mos').innerText = `${(safety * 100).toFixed(0)}%`;
+    document.getElementById('m1_safe_buy').innerText = `₹ ${fmtIN(safeBuy, 0)}`;
+
+    const badge = document.getElementById('m1_badge');
+    if (cmp <= safeBuy) {
+      badge.className = 'badge badge-green';
+      badge.innerText = 'UNDERVALUED — STRONG BUY';
+    } else if (cmp <= fairVal) {
+      badge.className = 'badge badge-yellow';
+      badge.innerText = 'FAIRLY PRICED — HOLD';
+    } else {
+      badge.className = 'badge badge-red';
+      badge.innerText = 'OVERVALUED — AVOID';
+    }
+
+    const p10 = totalEV > 0 ? Math.round((pv10 / totalEV) * 100) : 50;
+    const pTerm = 100 - p10;
+
+    document.getElementById('m1_pv10').innerText = `₹ ${fmtIN(pv10, 0)} Cr`;
+    document.getElementById('m1_pvterm').innerText = `₹ ${fmtIN(pvTerm, 0)} Cr`;
+    document.getElementById('m1_bar1').style.width = `${p10}%`;
+    document.getElementById('m1_bar2').style.width = `${pTerm}%`;
+    document.getElementById('m1_lbl1').innerText = `10-Yr FCF (${p10}%)`;
+    document.getElementById('m1_lbl2').innerText = `Terminal (${pTerm}%)`;
+    document.getElementById('m1_ev').innerText = `₹ ${fmtIN(totalEV, 0)} Cr`;
+  }
+
+  /* =========================================================
+     2. LOAN & EMI ENGINE
+     ========================================================= */
+  function runEMI() {
+    const P = parseFloat(document.getElementById('m2_loan').value) || 0;
+    const annRate = parseFloat(document.getElementById('m2_rate').value) || 0;
+    const yrs = Math.max(1, parseFloat(document.getElementById('m2_yrs').value) || 1);
+    const maxBgt = parseFloat(document.getElementById('m2_budget').value) || 0;
+
+    const n = Math.round(yrs * 12);
+    const r = annRate / 12 / 100;
+
+    const emi = r > 0 ? (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : P / n;
+    const maxLoan = r > 0 ? maxBgt * ((Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n))) : maxBgt * n;
+
+    document.getElementById('m2_sub').innerText =
+      `Tenure: ${n} Months (${yrs} Years) | Effective Rate: ${annRate.toFixed(2)}% p.a.`;
+
+    let bal = P;
+    let rows = "";
+
+    for (let m = 1; m <= n; m++) {
+      const openB = bal;
+      const intP = openB * r;
+      const prinP = emi - intP;
+      bal = Math.max(0, openB - prinP);
+
+      rows += `<tr>
+        <td>${m}</td>
+        <td>₹ ${fmtIN(openB, 0)}</td>
+        <td class="t-white">₹ ${fmtIN(emi, 0)}</td>
+        <td class="t-red">₹ ${fmtIN(intP, 0)}</td>
+        <td class="t-green">₹ ${fmtIN(prinP, 0)}</td>
+        <td>₹ ${fmtIN(bal, 0)}</td>
+      </tr>`;
+    }
+
+    document.getElementById('m2_tbody').innerHTML = rows;
+
+    const totalOut = emi * n;
+    const totalInt = Math.max(0, totalOut - P);
+    const pPct = totalOut > 0 ? Math.round((P / totalOut) * 100) : 0;
+    const iPct = 100 - pPct;
+    const extraPct = P > 0 ? Math.round((totalInt / P) * 100) : 0;
+
+    document.getElementById('m2_emi').innerText = `₹ ${fmtIN(emi, 0)}`;
+    document.getElementById('m2_prin').innerText = `₹ ${fmtIN(P, 0)}`;
+    document.getElementById('m2_rate_lbl').innerText = `${annRate.toFixed(2)}%`;
+
+    document.getElementById('m2_bgt_lbl').innerText = `₹ ${fmtIN(maxBgt, 0)}`;
+    document.getElementById('m2_max_loan').innerText = `₹ ${fmtIN(maxLoan, 0)}`;
+
+    const badge = document.getElementById('m2_badge');
+    if (Math.round(emi) <= maxBgt) {
+      badge.className = 'badge badge-green';
+      badge.innerText = 'WITHIN BUDGET';
+    } else {
+      badge.className = 'badge badge-red';
+      badge.innerText = 'EXCEEDS BUDGET';
+    }
+
+    document.getElementById('m2_tot_out').innerText = `₹ ${fmtIN(totalOut, 0)}`;
+    document.getElementById('m2_tot_int').innerText = `₹ ${fmtIN(totalInt, 0)}`;
+    document.getElementById('m2_bar1').style.width = `${pPct}%`;
+    document.getElementById('m2_bar2').style.width = `${iPct}%`;
+    document.getElementById('m2_lbl1').innerText = `Principal (${pPct}%)`;
+    document.getElementById('m2_lbl2').innerText = `Interest (${iPct}%)`;
+    document.getElementById('m2_extra_pct').innerText = `${extraPct}%`;
+  }
+
+  /* =========================================================
+     3. NPV & IRR ENGINE
+     ========================================================= */
+  function runNPV() {
+    const capex = parseFloat(document.getElementById('m3_capex').value) || 0;
+    const cf1 = parseFloat(document.getElementById('m3_cf1').value) || 0;
+    const g = (parseFloat(document.getElementById('m3_growth').value) || 0) / 100;
+    const wacc = (parseFloat(document.getElementById('m3_wacc').value) || 1) / 100;
+    const life = Math.min(25, Math.max(1, parseInt(document.getElementById('m3_life').value) || 7));
+
+    document.getElementById('m3_sub').innerText =
+      `Project Horizon: ${life} Years | Hurdle Rate (WACC): ${(wacc * 100).toFixed(1)}%`;
+
+    let cfs = [-capex];
+    let cumRaw = -capex;
+    let cumNPV = -capex;
+    let pvInflows = 0;
+    let payback = null;
+
+    let rows = `<tr>
+      <td class="t-red">Year 0</td>
+      <td class="t-red">-₹ ${fmtIN(capex, 1)} Cr</td>
+      <td class="t-muted">1.000x</td>
+      <td class="t-red">-₹ ${fmtIN(capex, 1)} Cr</td>
+      <td class="t-red">-₹ ${fmtIN(capex, 1)} Cr</td>
+      <td class="t-red">-₹ ${fmtIN(capex, 1)} Cr</td>
+    </tr>`;
+
+    for (let t = 1; t <= life; t++) {
+      const cf = cf1 * Math.pow(1 + g, t - 1);
+      cfs.push(cf);
+      const pvf = 1 / Math.pow(1 + wacc, t);
+      const dcf = cf * pvf;
+      pvInflows += dcf;
+
+      const prevRaw = cumRaw;
+      cumRaw += cf;
+      cumNPV += dcf;
+
+      if (payback === null && cumRaw >= 0 && cf > 0) {
+        payback = (t - 1) + (Math.abs(prevRaw) / cf);
+      }
+
+      rows += `<tr>
+        <td>Year ${t}</td>
+        <td class="t-white">₹ ${fmtIN(cf, 1)} Cr</td>
+        <td class="t-muted">${pvf.toFixed(3)}x</td>
+        <td class="t-green">₹ ${fmtIN(dcf, 1)} Cr</td>
+        <td class="t-white">₹ ${fmtIN(cumRaw, 1)} Cr</td>
+        <td class="${cumNPV >= 0 ? 't-green' : 't-red'}">₹ ${fmtIN(cumNPV, 1)} Cr</td>
+      </tr>`;
+    }
+
+    document.getElementById('m3_tbody').innerHTML = rows;
+
+    // IRR calculation (Newton-Raphson)
+    let irr = 0.15;
+    for (let i = 0; i < 120; i++) {
+      let npv = 0, dnpv = 0;
+      for (let t = 0; t < cfs.length; t++) {
+        npv += cfs[t] / Math.pow(1 + irr, t);
+        if (t > 0) dnpv -= t * cfs[t] / Math.pow(1 + irr, t + 1);
+      }
+      if (Math.abs(dnpv) < 1e-9) break;
+      const next = irr - npv / dnpv;
+      if (Math.abs(next - irr) < 1e-7) { irr = next; break; }
+      irr = Math.max(-0.95, Math.min(5, next));
+    }
+
+    const irrPct = irr * 100;
+    const spread = irrPct - (wacc * 100);
+    const pi = capex > 0 ? pvInflows / capex : 0;
+
+    const npvEl = document.getElementById('m3_npv');
+    npvEl.innerText = `${cumNPV >= 0 ? '+₹ ' : '-₹ '}${fmtIN(Math.abs(cumNPV), 1)} Cr`;
+    npvEl.className = `big-metric ${cumNPV >= 0 ? 't-green' : 't-red'}`;
+
+    document.getElementById('m3_pvin').innerText = `₹ ${fmtIN(pvInflows, 1)} Cr`;
+    document.getElementById('m3_capex_lbl').innerText = `₹ ${fmtIN(capex, 1)} Cr`;
+
+    document.getElementById('m3_irr').innerText = `${irrPct.toFixed(2)}%`;
+    document.getElementById('m3_spread_title').innerText = `Net Spread vs WACC (${(wacc * 100).toFixed(1)}%):`;
+
+    const spEl = document.getElementById('m3_spread');
+    spEl.innerText = `${spread >= 0 ? '+' : ''}${spread.toFixed(2)}%`;
+    spEl.className = spread >= 0 ? 't-green' : 't-red';
+
+    const badge = document.getElementById('m3_badge');
+    if (cumNPV >= 0) {
+      badge.className = 'badge badge-green';
+      badge.innerText = 'VIABLE — ACCEPT PROJECT';
+    } else {
+      badge.className = 'badge badge-red';
+      badge.innerText = 'UNVIABLE — REJECT PROJECT';
+    }
+
+    document.getElementById('m3_payback').innerText = payback !== null ? `${payback.toFixed(2)} Years` : `> ${life} Years`;
+    document.getElementById('m3_pi').innerText = `${pi.toFixed(2)}x`;
+
+    const recPct = pvInflows > 0 ? Math.min(100, Math.round((capex / pvInflows) * 100)) : 100;
+    const addPct = Math.max(0, 100 - recPct);
+
+    document.getElementById('m3_bar1').style.width = `${recPct}%`;
+    document.getElementById('m3_bar2').style.width = `${addPct}%`;
+    document.getElementById('m3_lbl1').innerText = `Capex Recovery (${recPct}%)`;
+    document.getElementById('m3_lbl2').innerText = `Net Value Added (${addPct}%)`;
+    document.getElementById('m3_raw_net').innerText = `₹ ${fmtIN(cumRaw, 1)} Cr`;
+  }
+
+  /* =========================================================
+     4. BREAK-EVEN (CVP) ENGINE
+     ========================================================= */
+  function runCVP() {
+    const price = parseFloat(document.getElementById('m4_price').value) || 0;
+    const vc = parseFloat(document.getElementById('m4_vc').value) || 0;
+    const fixedL = parseFloat(document.getElementById('m4_fixed').value) || 0;
+    const targetL = parseFloat(document.getElementById('m4_target').value) || 0;
+    const currU = parseFloat(document.getElementById('m4_curr').value) || 0;
+
+    const cmUnit = price - vc;
+    const cmPct = price > 0 ? (cmUnit / price) * 100 : 0;
+    const vcPct = Math.max(0, 100 - cmPct);
+
+    const fixedRs = fixedL * 100000;
+    const targetRs = targetL * 100000;
+
+    const bepU = cmUnit > 0 ? fixedRs / cmUnit : 0;
+    const bepRevL = (bepU * price) / 100000;
+
+    document.getElementById('m4_sub').innerText =
+      `Contribution Margin: ₹ ${fmtIN(cmUnit, 0)}/Unit (${cmPct.toFixed(1)}%) | Current Volume: ${fmtIN(currU, 0)} Units`;
+
+    const stepU = bepU > 0 ? Math.round(bepU * 0.25) : 5000;
+    let rows = "";
+
+    for (let i = 1; i <= 12; i++) {
+      const u = stepU * i;
+      const revL = (u * price) / 100000;
+      const varL = (u * vc) / 100000;
+      const ebitL = revL - varL - fixedL;
+      const opM = revL > 0 ? (ebitL / revL) * 100 : 0;
+      const isBEP = Math.abs(u - bepU) < 1;
+
+      rows += `<tr class="${isBEP ? 'row-bep' : ''}">
+        <td>${fmtIN(u, 0)} Units</td>
+        <td class="t-white">₹ ${fmtIN(revL, 1)} L</td>
+        <td class="t-red">₹ ${fmtIN(varL, 1)} L</td>
+        <td class="t-muted">₹ ${fmtIN(fixedL, 1)} L</td>
+        <td class="${ebitL >= 0 ? 't-green' : 't-red'}">₹ ${fmtIN(ebitL, 1)} L</td>
+        <td class="${opM >= 0 ? 't-green' : 't-red'}">${opM.toFixed(1)}%</td>
+      </tr>`;
+    }
+
+    document.getElementById('m4_tbody').innerHTML = rows;
+
+    const currEBIT_L = ((currU * cmUnit) - fixedRs) / 100000;
+    const mosPct = currU > 0 ? ((currU - bepU) / currU) * 100 : 0;
+    const reqUnits = cmUnit > 0 ? (fixedRs + targetRs) / cmUnit : 0;
+    const reqSalesL = (reqUnits * price) / 100000;
+
+    document.getElementById('m4_bep_u').innerText = `${fmtIN(bepU, 0)} Units`;
+    document.getElementById('m4_bep_rev').innerText = `₹ ${fmtIN(bepRevL, 2)} Lakh`;
+    document.getElementById('m4_cm_lbl').innerText = `₹ ${fmtIN(cmUnit, 0)} (${cmPct.toFixed(1)}%)`;
+
+    document.getElementById('m4_np_title').innerText = `Net Profit at ${fmtIN(currU, 0)} Units:`;
+    const npEl = document.getElementById('m4_np_val');
+    npEl.innerText = `₹ ${fmtIN(currEBIT_L, 2)} Lakh`;
+    npEl.className = currEBIT_L >= 0 ? 't-green' : 't-red';
+
+    const mosEl = document.getElementById('m4_mos');
+    mosEl.innerText = `${mosPct.toFixed(1)}%`;
+    mosEl.className = mosPct >= 0 ? 't-green' : 't-red';
+
+    const badge = document.getElementById('m4_badge');
+    if (currEBIT_L > 0) {
+      badge.className = 'badge badge-green';
+      badge.innerText = 'PROFITABLE — SAFE ZONE';
+    } else if (currEBIT_L === 0) {
+      badge.className = 'badge badge-yellow';
+      badge.innerText = 'AT BREAK-EVEN POINT';
+    } else {
+      badge.className = 'badge badge-red';
+      badge.innerText = 'LOSS MAKING — BELOW BEP';
+    }
+
+    document.getElementById('m4_t_goal').innerText = `₹ ${fmtIN(targetL, 1)} Lakh`;
+    document.getElementById('m4_t_sales').innerText = `₹ ${fmtIN(reqSalesL, 2)} Lakh`;
+
+    document.getElementById('m4_bar1').style.width = `${Math.round(vcPct)}%`;
+    document.getElementById('m4_bar2').style.width = `${Math.round(cmPct)}%`;
+    document.getElementById('m4_lbl1').innerText = `Variable Cost (${Math.round(vcPct)}%)`;
+    document.getElementById('m4_lbl2').innerText = `Contribution (${Math.round(cmPct)}%)`;
+    document.getElementById('m4_t_units').innerText = `${fmtIN(reqUnits, 0)} Units`;
+  }
+
+  // Initialize all 4 modules on load
+  runDCF();
+  runEMI();
+  runNPV();
+  runCVP();
+</script>
+</body>
+</html>
