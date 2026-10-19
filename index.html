@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html theme="dark" editor="Default Dark" style="overflow-y: hidden;"><head><meta charset="UTF-8">
+<html theme="dark" editor="Default Dark"><head><meta charset="UTF-8">
 <script>
   // Avoid arrow function syntax to stay ES5 compatible for the sake of googlebot.
   window.addEventListener("message", function (message) {
@@ -21,7 +21,7 @@
 
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>CFO Command Center | Designed by Mohit Tiwari</title>
 <style>
   :root {
@@ -47,16 +47,26 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
   }
 
-  body {
+  /* UNLOCKED VERTICAL & HORIZONTAL SCROLLING FOR ALL SCREENS */
+  html, body {
     background-color: var(--bg-body);
     color: var(--text-white);
-    padding: 10px 12px;
-    min-height: 100vh;
-    overflow-x: hidden;
+    width: 100%;
+    min-height: 100%;
+    height: auto !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y !important;
+  }
+
+  body {
+    padding: 10px 12px 40px 12px;
   }
 
   .container {
     max-width: 1440px;
+    min-width: 320px;
     margin: 0 auto;
   }
 
@@ -95,16 +105,11 @@
     font-size: 0.78rem;
     font-weight: 800;
     cursor: pointer;
-    transition: opacity 0.15s;
   }
 
   .colab-btn.green {
     background: var(--green-bright);
     color: #05070b;
-  }
-
-  .colab-btn:hover {
-    opacity: 0.9;
   }
 
   /* PERSISTENT TOP DESIGNER HEADER BAR (ACROSS ALL 4 INTERFACES) */
@@ -161,6 +166,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    flex-shrink: 0;
   }
 
   .designer-badge:hover {
@@ -380,36 +386,33 @@
     display: grid;
     grid-template-columns: 2.15fr 1fr;
     gap: 12px;
-    align-items: stretch;
+    align-items: start;
   }
 
   .table-panel {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 7px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    overflow: visible;
   }
 
+  /* Smooth Horizontal & Vertical Table Scrolling */
   .table-scroll {
     width: 100%;
     overflow-x: auto;
-    overflow-y: auto;
-    max-height: 500px;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 560px;
+    min-width: 600px;
   }
 
   thead th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
     background: linear-gradient(180deg, #163e64 0%, #113252 100%);
     color: #f1f5f9;
     font-size: 0.76rem;
@@ -622,7 +625,7 @@
   }
 
   @media (max-width: 700px) {
-    body { padding: 8px; }
+    body { padding: 8px 8px 40px 8px; }
     .top-brand-bar { padding: 8px 10px; }
     .brand-main-title { font-size: 0.88rem; }
     .brand-sub-tag { display: none; }
@@ -641,7 +644,7 @@
 
 
 <div class="container">
-  <!-- COLAB INSTANT PHOTO & DOWNLOAD BAR (Automatically stripped out when downloading index.html) -->
+  <!-- COLAB INSTANT PHOTO & DOWNLOAD BAR (Stripped out in downloaded index.html) -->
   
 
   <!-- PERSISTENT TOP HEADER ACROSS ALL 4 INTERFACES -->
@@ -1603,7 +1606,6 @@
 </div>
 
 <script type="">
-  // Instant Browser-Side Photo Loader (Zero Colab Server Lag)
   function handleInstantPhoto(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1623,18 +1625,26 @@
         const dataUrl = canvas.toDataURL('image/jpeg', 0.86);
         document.getElementById('topAvatarImg').src = dataUrl;
         document.getElementById('modalAvatarImg').src = dataUrl;
-        document.getElementById('helperStatus').innerHTML = "✅ <strong>Photo Attached!</strong> Now tap <strong>'2. Download index.html'</strong> to get your file for GitHub.";
+        document.getElementById('helperStatus').innerHTML = "✅ <strong>Photo Attached!</strong> Now tap <strong>'2. Download Unlocked index.html'</strong>.";
       };
       img.src = evt.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  // Exports clean index.html with the embedded photo and removes the helper bar
+  // Strips out Colab's injected overflow:hidden styles so scrolling works 100% everywhere
   function exportCleanHTML() {
     const clone = document.documentElement.cloneNode(true);
+    clone.removeAttribute('style');
+    clone.removeAttribute('class');
+    const bodyEl = clone.querySelector('body');
+    if (bodyEl) {
+      bodyEl.removeAttribute('style');
+      bodyEl.removeAttribute('class');
+    }
     const helper = clone.querySelector('#colabHelperBar');
     if (helper) helper.remove();
+
     const finalHtml = "<!DOCTYPE html>\n" + clone.outerHTML;
     const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
